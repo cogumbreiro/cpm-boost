@@ -19,6 +19,7 @@ CPM_InitModule(${CPM_MODULE_NAME})
 # boost library
 #------------------------------------------------------------------------------
 
+message(STATUS "downloading boost libraries")
 CPM_EnsureRepoIsCurrent(
     TARGET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/boost"            # Required - Directory in which to place repository.
     GIT_REPOSITORY "https://github.com/boostorg/boost.git"         # Git repository to clone and keep up to date.
@@ -28,6 +29,7 @@ CPM_EnsureRepoIsCurrent(
                                  # Not enabled by default.
     )
 
+message(STATUS "adding boost libraries")
 
 macro(cpm_boost_subdirlist result curdir)
   file(GLOB children RELATIVE ${curdir} ${curdir}/*)
@@ -44,7 +46,7 @@ cpm_boost_subdirlist(cpm_boost_subdirs "${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
 foreach(subdir ${cpm_boost_subdirs})
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libs/${subdir}/include")  
-    message("-- adding boost ${subdir}")
+    message(STATUS "adding boost::${subdir}")
     CPM_ExportAdditionalIncludeDir("${CMAKE_CURRENT_SOURCE_DIR}/libs/${subdir}/include")
   endif()
 endforeach()
