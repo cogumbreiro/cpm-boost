@@ -4,29 +4,11 @@ cmake_minimum_required(VERSION 2.8.9 FATAL_ERROR)
 # CPM configuration
 #-----------------------------------------------------------------------
 set(CPM_MODULE_NAME boost)
-set(CPM_LIB_TARGET_NAME ${CPM_MODULE_NAME})
-
-if ((DEFINED CPM_DIR) AND (DEFINED CPM_UNIQUE_ID) AND (DEFINED CPM_TARGET_NAME))
-  set(CPM_LIB_TARGET_NAME ${CPM_TARGET_NAME})
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CPM_DIR})
-  include(CPM)
-else()
-  set(CPM_DIR "${CMAKE_CURRENT_BINARY_DIR}/cpm-packages" CACHE TYPE STRING)
-  find_package(Git)
-  if(NOT GIT_FOUND)
-    message(FATAL_ERROR "CPM requires Git.")
-  endif()
-  if (NOT EXISTS ${CPM_DIR}/CPM.cmake)
-    execute_process(
-      COMMAND "${GIT_EXECUTABLE}" clone https://github.com/iauns/cpm ${CPM_DIR}
-      RESULT_VARIABLE error_code
-      OUTPUT_VARIABLE head_sha)
-    if(error_code)
-      message(FATAL_ERROR "CPM failed to get the hash for HEAD")
-    endif()
-  endif()
-  include(${CPM_DIR}/CPM.cmake)
+# initialize
+if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/init.cmake)
+  file(DOWNLOAD https://raw.github.com/toeb/cpm/master/init-cpm-module.cmake ${CMAKE_CURRENT_BINARY_DIR}/init.cmake)
 endif()
+include(${CMAKE_CURRENT_BINARY_DIR}/init.cmake)
 
 # All externals *must* define this.
 CPM_ForceOnlyOneModuleVersion()
@@ -34,7 +16,7 @@ CPM_ForceOnlyOneModuleVersion()
 CPM_InitModule(${CPM_MODULE_NAME})
 
 #------------------------------------------------------------------------------
-# boost graph library
+# boost library
 #------------------------------------------------------------------------------
 
 CPM_EnsureRepoIsCurrent(
@@ -47,4 +29,21 @@ CPM_EnsureRepoIsCurrent(
     )
 
 
-CPM_ExportAdditionalIncludeDir("${CMAKE_CURRENT_SOURCE_DIR}/boost")
+macro(cpm_boost_subdirlist result curdir)
+  file(GLOB children RELATIVE ${curdir} ${curdir}/*)
+  set(dirlist "")
+  foreach(child ${children})
+    if(IS_DIRECTORY ${curdir}/${child})
+        set(dirlist ${dirlist} ${child})
+    endif()
+  endforeach()
+  set(${result} ${dirlist})
+endmacro()
+
+cpm_boost_subdirlist(cpm_boost_subdirs "${CMAKE_CURRENT_SOURCE_DIR}/libs")
+
+foreach(subdir ${cpm_boost_subdirs})
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libs/${subdir}/include")  
+    CPM_ExportAdditionalIncludeDir("${CMAKE_CURRENT_SOURCE_DIR}/libs/${subdir}/include")
+  endif()
+endforeach()
