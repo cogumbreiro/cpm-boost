@@ -44,6 +44,7 @@ cpm_boost_subdirlist(cpm_boost_subdirs "${CMAKE_CURRENT_SOURCE_DIR}/libs")
 
 foreach(subdir ${cpm_boost_subdirs})
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libs/${subdir}/include")  
+    message("-- adding boost ${subdir}")
     CPM_ExportAdditionalIncludeDir("${CMAKE_CURRENT_SOURCE_DIR}/libs/${subdir}/include")
   endif()
 endforeach()
