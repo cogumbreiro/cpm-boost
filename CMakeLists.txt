@@ -23,8 +23,8 @@ message(STATUS "downloading boost libraries")
 CPM_EnsureRepoIsCurrent(
     TARGET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/boost"            # Required - Directory in which to place repository.
     GIT_REPOSITORY "https://github.com/boostorg/boost.git"         # Git repository to clone and keep up to date.
-    GIT_TAG  "boost-1.57.0"      # Git tag to checkout.   
-    USE_CACHING 1                # Enables caching of repositories if the user 
+    GIT_TAG  "boost-1.57.0"      # Git tag to checkout.
+    USE_CACHING 1                # Enables caching of repositories if the user
                                  # has specified CPM_MODULE_CACHING_DIR.
                                  # Not enabled by default.
     )
@@ -45,8 +45,16 @@ endmacro()
 cpm_boost_subdirlist(cpm_boost_subdirs "${CMAKE_CURRENT_SOURCE_DIR}/boost/libs")
 
 foreach(subdir ${cpm_boost_subdirs})
-  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/${subdir}/include")  
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/${subdir}/include")
     message(STATUS "adding boost::${subdir}")
     CPM_ExportAdditionalIncludeDir("${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/${subdir}/include")
+  else()
+    file(GLOB children RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/${subdir}/" "${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/${subdir}/*")
+    foreach(child ${children})
+      if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/${subdir}/${child}/include/boost")
+	message(STATUS "adding boost::${subdir}::${child}")
+	CPM_ExportAdditionalIncludeDir("${CMAKE_CURRENT_SOURCE_DIR}/boost/libs/${subdir}/${child}/include")
+      endif()
+    endforeach()
   endif()
 endforeach()
